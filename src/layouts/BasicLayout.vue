@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 import AIAgent from '../components/AIAgent.vue'
@@ -102,11 +102,27 @@ const handleCommand = (command: string) => {
     .search-input {
       width: 200px;
     }
+
+    .el-dropdown-link {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--el-color-primary);
+      
+      .user-avatar {
+        margin-right: 8px;
+      }
+      
+      .username {
+        font-weight: 500;
+      }
+    }
   }
 }
 
 .main-content {
   padding: 0;
+  margin-top: 60px;
   min-height: calc(100vh - 60px);
   background-color: #f5f7fa;
 }

@@ -1,228 +1,261 @@
 <template>
-  <div class="ai-agent-container" :class="{ 'is-expanded': isExpanded }">
-    <!-- Floating Character -->
-    <div class="agent-avatar" @mouseenter="isHovered = true" @mouseleave="isHovered = false" @click="toggleChat">
-      <img src="https://api.dicebear.com/7.x/bottts/svg?seed=SmartLearning" alt="AI Agent" class="avatar-img" />
-      <div v-if="isHovered && !isExpanded" class="speech-bubble">
-        你有什么想要询问小堂的吗？
+  <div class="ai-agent-container">
+    <div 
+      class="black-cat-agent" 
+      :style="agentStyle"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
+      @click="handleJump"
+    >
+      <div class="cat-body-wrapper" :class="{ 'facing-left': !isFacingRight }">
+        <div class="cat-animator" :class="{ 'is-running': !isHovered }">
+          
+          <img src="https://cdn-icons-png.flaticon.com/512/375/375116.png" alt="Black Cat" class="cat-img" />
+          
+          <div class="glasses-overlay">
+            <svg viewBox="0 0 100 40" class="glasses-svg">
+              <g fill="none" stroke="white" stroke-width="6"> <path d="M10,20 Q25,35 40,20" stroke="black" fill="rgba(255,255,255,0.3)" stroke-width="4"/>
+                <path d="M60,20 Q75,35 90,20" stroke="black" fill="rgba(255,255,255,0.3)" stroke-width="4"/>
+                <line x1="40" y1="20" x2="60" y2="20" stroke="black" stroke-width="4" />
+                <line x1="10" y1="20" x2="0" y2="15" stroke="black" stroke-width="3" />
+                <line x1="90" y1="20" x2="100" y2="15" stroke="black" stroke-width="3" />
+              </g>
+            </svg>
+          </div>
+          
+        </div>
       </div>
-    </div>
 
-    <!-- Chat Interface -->
-    <div v-if="isExpanded" class="chat-window">
-      <div class="chat-header">
-        <div class="header-left">
-          <el-avatar :size="30" src="https://api.dicebear.com/7.x/bottts/svg?seed=SmartLearning" />
-          <span class="agent-name">小堂助手</span>
+      <transition name="el-zoom-in-bottom">
+        <div v-if="isHovered" class="speech-bubble">
+          你有什么想问小堂的吗？
         </div>
-        <div class="header-controls">
-           <el-icon @click="toggleChat"><Close /></el-icon>
-        </div>
-      </div>
-      
-      <div class="chat-body">
-        <div v-if="messages.length === 0" class="welcome-screen">
-          <h3>Hi，我是小堂！</h3>
-          <p>我可以帮你：</p>
-          <div class="suggestion-chips">
-            <el-tag class="chip" @click="sendMessage('解答问题')">解答问题</el-tag>
-            <el-tag class="chip" @click="sendMessage('生成题库')">生成题库</el-tag>
-            <el-tag class="chip" @click="sendMessage('搭建本地知识库')">搭建本地知识库</el-tag>
-          </div>
-        </div>
-        
-        <div v-else class="message-list">
-          <div v-for="(msg, index) in messages" :key="index" class="message-item" :class="msg.role">
-            <div class="message-content">{{ msg.content }}</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="chat-footer">
-        <el-input 
-          v-model="inputMessage" 
-          placeholder="输入你的问题..." 
-          @keyup.enter="handleSend"
-        >
-          <template #append>
-            <el-button @click="handleSend"><el-icon><Position /></el-icon></el-button>
-          </template>
-        </el-input>
-      </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Close, Position } from '@element-plus/icons-vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const isExpanded = ref(false)
+const router = useRouter()
+
+// 状态管理
 const isHovered = ref(false)
-const inputMessage = ref('')
-const messages = ref<{role: 'user' | 'assistant', content: string}[]>([])
+const position = ref({ x: 0, y: 0 })
+const duration = ref(0) 
+const isFacingRight = ref(true) 
+const moveTimeout = ref<any>(null)
 
-const toggleChat = () => {
-  isExpanded.value = !isExpanded.value
+// 初始位置
+position.value = { 
+  x: window.innerWidth - 100, 
+  y: window.innerHeight - 100 
 }
 
-const sendMessage = (text: string) => {
-  messages.value.push({ role: 'user', content: text })
-  // Mock AI response
-  setTimeout(() => {
-    messages.value.push({ 
-      role: 'assistant', 
-      content: `收到！正在为你处理"${text}"相关的请求...（这是模拟回复）` 
-    })
-  }, 1000)
+const agentStyle = computed(() => ({
+  transform: `translate(${position.value.x}px, ${position.value.y}px)`,
+  // 悬停时立即移除移动过渡，防止“滑步”
+  transition: isHovered.value ? 'none' : `transform ${duration.value}s linear`
+}))
+
+const getRandomPosition = () => {
+  const padding = 60 // 减小边距
+  const maxX = window.innerWidth - padding
+  const maxY = window.innerHeight - padding
+  return {
+    x: Math.max(padding, Math.random() * maxX),
+    y: Math.max(padding, Math.random() * maxY)
+  }
 }
 
-const handleSend = () => {
-  if (!inputMessage.value.trim()) return
-  sendMessage(inputMessage.value)
-  inputMessage.value = ''
+const startWandering = () => {
+  if (isHovered.value) return
+
+  const nextPos = getRandomPosition()
+  
+  // 计算速度：VS Code Pets 通常移动较慢，这里设置为 80px/s
+  const dx = nextPos.x - position.value.x
+  const dy = nextPos.y - position.value.y
+  const distance = Math.sqrt(dx * dx + dy * dy)
+  const speed = 80 
+  const moveTime = distance / speed
+  
+  // 判断朝向
+  if (dx > 0) isFacingRight.value = true
+  else isFacingRight.value = false
+
+  duration.value = moveTime
+  position.value = nextPos
+  
+  // 随机休息时间 1-3秒
+  const restTime = Math.random() * 2000 + 1000
+  
+  moveTimeout.value = setTimeout(() => {
+    startWandering()
+  }, moveTime * 1000 + restTime)
 }
+
+const handleMouseEnter = () => {
+  isHovered.value = true
+  const agent = document.querySelector('.black-cat-agent') as HTMLElement
+  if (agent) {
+    const rect = agent.getBoundingClientRect()
+    position.value = { x: rect.left, y: rect.top }
+  }
+  if (moveTimeout.value) clearTimeout(moveTimeout.value)
+}
+
+const handleMouseLeave = () => {
+  isHovered.value = false
+  startWandering()
+}
+
+const handleJump = () => {
+  router.push('/ai-agent') 
+}
+
+onMounted(() => {
+  setTimeout(startWandering, 1000)
+  window.addEventListener('resize', () => {
+    position.value = { x: window.innerWidth - 100, y: window.innerHeight - 100 }
+  })
+})
+
+onUnmounted(() => {
+  if (moveTimeout.value) clearTimeout(moveTimeout.value)
+})
 </script>
 
 <style scoped lang="scss">
 .ai-agent-container {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 999;
+  position: absolute;
+  top: 0; left: 0; width: 0; height: 0;
+  overflow: visible;
+  z-index: 9999;
 }
 
-.agent-avatar {
-  width: 60px;
-  height: 60px;
+.black-cat-agent {
+  position: fixed;
+  /* 尺寸控制：1.5cm - 2cm 约等于 60px - 75px
+     VS Code Pets 通常较小，这里设定为 65px
+  */
+  width: 65px; 
+  height: 65px;
   cursor: pointer;
-  position: relative;
-  transition: transform 0.3s;
+  will-change: transform;
+  z-index: 2000;
   
-  &:hover {
-    transform: scale(1.1);
-  }
-  
-  .avatar-img {
+  /* 容器：负责左右翻转 */
+  .cat-body-wrapper {
+    position: relative;
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    background: white;
+    transition: transform 0.2s;
+    
+    /* 默认朝右，若 facing-left 则翻转 */
+    &.facing-left {
+      transform: scaleX(-1);
+    }
+    
+    /* 悬停时：强制回正并放大一点，产生互动感 */
+    .black-cat-agent:hover & {
+      transform: scaleX(1) scale(1.1) !important;
+    }
+
+    /* 动画层：负责奔跑时的上下颠簸 */
+    .cat-animator {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      
+      /* 当不在悬停状态（即在奔跑）时，应用颠簸动画 */
+      &.is-running {
+        animation: run-bounce 0.25s infinite alternate ease-in-out;
+      }
+    }
+    
+    .cat-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* 纯黑剪影滤镜，确保猫是纯黑色的 */
+      filter: brightness(0); 
+    }
+
+    .glasses-overlay {
+      position: absolute;
+      /* 针对全身猫素材的微调：
+         因为是全身照，头通常在上方 10%-40% 的区域
+         根据素材实际情况调整 top/left/width
+      */
+      top: 22%; 
+      left: 45%; /* 假设猫头稍微偏右或居中 */
+      transform: translateX(-50%);
+      width: 45%; /* 眼镜占身体宽度的比例 */
+      height: 20%;
+      z-index: 2001;
+      opacity: 0.9;
+      
+      .glasses-svg {
+        width: 100%;
+        height: 100%;
+        /* 给眼镜加一点投影，使其在黑猫身上更明显 */
+        filter: drop-shadow(0 1px 1px rgba(255,255,255,0.4));
+      }
+    }
   }
-  
+
   .speech-bubble {
     position: absolute;
-    right: 70px;
-    top: 10px;
-    background: white;
+    top: -50px; 
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
     padding: 8px 12px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
-    font-size: 14px;
-    
+    font-size: 12px; /* 字体改小以匹配宠物尺寸 */
+    color: #333;
+    font-weight: bold;
+    pointer-events: none;
+    border: 1px solid #333;
+
     &::after {
       content: '';
       position: absolute;
-      right: -6px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-left: 6px solid white;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid #333;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #fff;
+      z-index: 1;
     }
   }
 }
 
-.chat-window {
-  position: absolute;
-  bottom: 80px;
-  right: 0;
-  width: 350px;
-  height: 500px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  
-  .chat-header {
-    padding: 15px;
-    background: #409EFF;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: bold;
-    }
-    
-    .header-controls {
-      cursor: pointer;
-    }
+/* 奔跑动画的关键帧：模拟小碎步的颠簸感 */
+@keyframes run-bounce {
+  0% {
+    transform: translateY(0) rotate(0deg);
   }
-  
-  .chat-body {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background: #f9f9f9;
-    
-    .welcome-screen {
-      text-align: center;
-      margin-top: 50px;
-      
-      .suggestion-chips {
-        margin-top: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: center;
-        
-        .chip {
-          cursor: pointer;
-        }
-      }
-    }
-    
-    .message-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      
-      .message-item {
-        max-width: 80%;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-size: 14px;
-        
-        &.user {
-          align-self: flex-end;
-          background: #409EFF;
-          color: white;
-          border-bottom-right-radius: 2px;
-        }
-        
-        &.assistant {
-          align-self: flex-start;
-          background: white;
-          border: 1px solid #e4e7ed;
-          border-bottom-left-radius: 2px;
-        }
-      }
-    }
-  }
-  
-  .chat-footer {
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background: white;
+  100% {
+    /* 向上跳动 4px，并轻微前倾，模拟奔跑的动势 */
+    transform: translateY(-4px) rotate(3deg); 
   }
 }
 </style>

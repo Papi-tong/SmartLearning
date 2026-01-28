@@ -3,11 +3,15 @@ import { useUserStore } from '../stores/user'
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/Login.vue')
+  },
+  {
     path: '/',
     component: () => import('../layouts/BasicLayout.vue'),
     children: [
       { path: '', name: 'Home', component: () => import('../views/Home.vue') },
-      { path: 'login', name: 'Login', component: () => import('../views/Login.vue') },
       // Other public pages
       { path: 'question-bank', name: 'PublicQuestionBank', component: () => import('../views/public/QuestionBank.vue') },
       { path: 'practice', name: 'PublicPractice', component: () => import('../views/public/Practice.vue') },

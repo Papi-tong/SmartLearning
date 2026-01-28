@@ -1,16 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-
-export type UserRole = 'guest' | 'student' | 'teacher' | 'admin'
-
-export interface UserInfo {
-  id: string
-  username: string
-  name: string
-  role: UserRole
-  avatar?: string
-}
+import { loginApi, logoutApi, type LoginParams, type UserInfo } from '../api/auth'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref<string | null>(localStorage.getItem('token'))
@@ -28,18 +18,28 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = computed(() => !!token.value)
   const role = computed(() => userInfo.value?.role || 'guest')
 
-  function login(user: UserInfo, newToken: string) {
-    token.value = newToken
-    userInfo.value = user
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('userInfo', JSON.stringify(user))
+  async function login(params: LoginParams) {
+    try {
+      const { token: newToken, user } = await loginApi(params)
+      token.value = newToken
+      userInfo.value = user
+      localStorage.setItem('token', newToken)
+      localStorage.setItem('userInfo', JSON.stringify(user))
+      return user
+    } catch (error) {
+      throw error
+    }
   }
 
-  function logout() {
-    token.value = null
-    userInfo.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
+  async function logout() {
+    try {
+      await logoutApi()
+    } finally {
+      token.value = null
+      userInfo.value = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+    }
   }
 
   return {
@@ -51,3 +51,4 @@ export const useUserStore = defineStore('user', () => {
     logout
   }
 })
+

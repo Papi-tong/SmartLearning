@@ -7,28 +7,15 @@
       @mouseleave="handleMouseLeave"
       @click="handleJump"
     >
-      <div class="cat-body-wrapper" :class="{ 'facing-left': !isFacingRight }">
-        <div class="cat-animator" :class="{ 'is-running': !isHovered }">
-          
-          <img src="https://cdn-icons-png.flaticon.com/512/375/375116.png" alt="Black Cat" class="cat-img" />
-          
-          <div class="glasses-overlay">
-            <svg viewBox="0 0 100 40" class="glasses-svg">
-              <g fill="none" stroke="white" stroke-width="6"> <path d="M10,20 Q25,35 40,20" stroke="black" fill="rgba(255,255,255,0.3)" stroke-width="4"/>
-                <path d="M60,20 Q75,35 90,20" stroke="black" fill="rgba(255,255,255,0.3)" stroke-width="4"/>
-                <line x1="40" y1="20" x2="60" y2="20" stroke="black" stroke-width="4" />
-                <line x1="10" y1="20" x2="0" y2="15" stroke="black" stroke-width="3" />
-                <line x1="90" y1="20" x2="100" y2="15" stroke="black" stroke-width="3" />
-              </g>
-            </svg>
-          </div>
-          
+      <div class="cat-body-wrapper" :class="{ 'facing-left': !isFacingRight && currentState !== 'sit' }">
+        <div class="cat-animator" :class="currentState">
+          <img :src="currentImage" alt="Pixel Cat" class="cat-img" />
         </div>
       </div>
 
       <transition name="el-zoom-in-bottom">
         <div v-if="isHovered" class="speech-bubble">
-          你有什么想问小堂的吗？
+          你有什么想要询问小堂的吗？
         </div>
       </transition>
     </div>
@@ -39,85 +26,159 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+// 导入你的图片资源
+import sitImg from '../assets/cat-sit.png'   // 对应：生成黑猫不同状态图片.jpg
+import walkImg from '../assets/cat-walk.png' // 对应：漫步.jpg
+import runImg from '../assets/cat-run.png'   // 对应：奔跑.jpg
+
 const router = useRouter()
+
+// 定义三种状态
+type AgentState = 'sit' | 'walk' | 'run'
 
 // 状态管理
 const isHovered = ref(false)
-const position = ref({ x: 0, y: 0 })
+// 初始位置设定在右下角
+const position = ref({ x: window.innerWidth - 100, y: window.innerHeight - 100 })
 const duration = ref(0) 
 const isFacingRight = ref(true) 
+const currentState = ref<AgentState>('walk') // 默认状态
 const moveTimeout = ref<any>(null)
 
-// 初始位置
-position.value = { 
-  x: window.innerWidth - 100, 
-  y: window.innerHeight - 100 
-}
+// 计算当前应该展示哪张图片
+const currentImage = computed(() => {
+  switch (currentState.value) {
+    case 'sit': return sitImg
+    case 'run': return runImg
+    case 'walk': 
+    default: return walkImg
+  }
+})
 
+// 动态样式计算
 const agentStyle = computed(() => ({
   transform: `translate(${position.value.x}px, ${position.value.y}px)`,
-  // 悬停时立即移除移动过渡，防止“滑步”
-  transition: isHovered.value ? 'none' : `transform ${duration.value}s linear`
+  // 悬停时或坐下时移除过渡效果，防止图片切换时的滑动感
+  transition: isHovered.value || currentState.value === 'sit' ? 'none' : `transform ${duration.value}s linear`,
+  zIndex: 2000
 }))
 
-const getRandomPosition = () => {
-  const padding = 60 // 减小边距
-  const maxX = window.innerWidth - padding
-  const maxY = window.innerHeight - padding
-  return {
-    x: Math.max(padding, Math.random() * maxX),
-    y: Math.max(padding, Math.random() * maxY)
+/**
+ * 获取屏幕边缘或底部的随机位置
+ * 模拟“侧边栏漫步”和“底部漫步”的逻辑
+ */
+const getRandomEdgePosition = () => {
+  const padding = 60
+  const width = window.innerWidth - padding
+  const height = window.innerHeight - padding
+  const edgeThreshold = 150 // 距离边缘多少像素算“边栏”
+
+  const rand = Math.random()
+  
+  // 70% 的概率在底部活动
+  if (rand < 0.7) {
+    return {
+      x: Math.random() * width,
+      y: height - (Math.random() * 50) // 贴近底部 50px 范围内
+    }
+  } 
+  // 30% 的概率在左右侧边
+  else {
+    const isLeft = Math.random() > 0.5
+    return {
+      x: isLeft ? padding : width - padding, // 贴左边或贴右边
+      y: Math.random() * height
+    }
   }
 }
 
-const startWandering = () => {
+/**
+ * 核心行为逻辑：自主漫步或奔跑
+ */
+const startBehavior = () => {
   if (isHovered.value) return
 
-  const nextPos = getRandomPosition()
+  // 随机决定下一个动作：漫步(60%) vs 奔跑(40%)
+  // 注意：不再随机进入 'sit' 状态，因为只有交互时才坐下
+  const rand = Math.random()
   
-  // 计算速度：VS Code Pets 通常移动较慢，这里设置为 80px/s
-  const dx = nextPos.x - position.value.x
-  const dy = nextPos.y - position.value.y
+  if (rand < 0.6) {
+    // === 漫步模式 (对应图一) ===
+    currentState.value = 'walk'
+    // 漫步距离较短，速度较慢
+    const nextPos = getRandomEdgePosition() 
+    // 计算距离，限制单次漫步不要走太远，看起来更自然
+    moveAgent(nextPos, 60) // 速度 60px/s
+  } else {
+    // === 奔跑模式 (对应图二) ===
+    currentState.value = 'run'
+    // 奔跑可以跨越屏幕
+    const nextPos = getRandomEdgePosition()
+    moveAgent(nextPos, 200) // 速度 200px/s (快)
+  }
+}
+
+/**
+ * 移动执行函数
+ */
+const moveAgent = (targetPos: {x: number, y: number}, speed: number) => {
+  const dx = targetPos.x - position.value.x
+  const dy = targetPos.y - position.value.y
   const distance = Math.sqrt(dx * dx + dy * dy)
-  const speed = 80 
+  
+  // 如果距离太近，直接开始下一次，避免抽搐
+  if (distance < 10) {
+    startBehavior()
+    return
+  }
+
   const moveTime = distance / speed
   
-  // 判断朝向
+  // 判断朝向 (用于翻转漫步和奔跑图片)
   if (dx > 0) isFacingRight.value = true
-  else isFacingRight.value = false
-
+  else if (dx < 0) isFacingRight.value = false
+  
   duration.value = moveTime
-  position.value = nextPos
+  position.value = targetPos
   
-  // 随机休息时间 1-3秒
-  const restTime = Math.random() * 2000 + 1000
-  
-  moveTimeout.value = setTimeout(() => {
-    startWandering()
-  }, moveTime * 1000 + restTime)
+  // 移动结束后，休息一小会儿再进行下一个动作
+  moveTimeout.value = setTimeout(startBehavior, moveTime * 1000 + 500)
 }
+
+// === 交互事件 ===
 
 const handleMouseEnter = () => {
   isHovered.value = true
+  
+  // 1. 立即停止移动逻辑
+  if (moveTimeout.value) clearTimeout(moveTimeout.value)
+  
+  // 2. 切换为端坐状态 (对应图三)
+  currentState.value = 'sit'
+  
+  // 3. 更新位置为当前视觉位置，防止 transition 移除时跳变
   const agent = document.querySelector('.black-cat-agent') as HTMLElement
   if (agent) {
     const rect = agent.getBoundingClientRect()
     position.value = { x: rect.left, y: rect.top }
   }
-  if (moveTimeout.value) clearTimeout(moveTimeout.value)
 }
 
 const handleMouseLeave = () => {
   isHovered.value = false
-  startWandering()
+  // 离开后立即开始漫步/奔跑
+  startBehavior()
 }
 
 const handleJump = () => {
   router.push('/ai-agent') 
 }
 
+// === 生命周期 ===
 onMounted(() => {
-  setTimeout(startWandering, 1000)
+  // 稍微延迟启动
+  setTimeout(startBehavior, 1000)
+  
   window.addEventListener('resize', () => {
     position.value = { x: window.innerWidth - 100, y: window.innerHeight - 100 }
   })
@@ -138,41 +199,40 @@ onUnmounted(() => {
 
 .black-cat-agent {
   position: fixed;
-  /* 尺寸控制：1.5cm - 2cm 约等于 60px - 75px
-     VS Code Pets 通常较小，这里设定为 65px
-  */
-  width: 65px; 
-  height: 65px;
+  /* 根据图片比例，适当调整大小，像素风通常较小 */
+  width: 80px; 
+  height: 80px;
   cursor: pointer;
   will-change: transform;
-  z-index: 2000;
   
-  /* 容器：负责左右翻转 */
   .cat-body-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.2s;
+    transition: transform 0.1s; /* 翻转时的平滑过渡 */
     
-    /* 默认朝右，若 facing-left 则翻转 */
+    /* 只有当 facing-left 为 true 时才翻转 
+       逻辑在 script 中控制：坐下时不翻转
+    */
     &.facing-left {
       transform: scaleX(-1);
     }
     
-    /* 悬停时：强制回正并放大一点，产生互动感 */
+    /* 悬停时稍微放大，增强交互感 */
     .black-cat-agent:hover & {
-      transform: scaleX(1) scale(1.1) !important;
+      transform: scale(1.1) !important; 
     }
 
-    /* 动画层：负责奔跑时的上下颠簸 */
     .cat-animator {
       width: 100%;
       height: 100%;
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       
-      /* 当不在悬停状态（即在奔跑）时，应用颠簸动画 */
-      &.is-running {
-        animation: run-bounce 0.25s infinite alternate ease-in-out;
+      /* 可选：为奔跑添加轻微的上下颠簸动画 */
+      &.run {
+        animation: run-bounce 0.2s infinite alternate;
       }
     }
     
@@ -180,49 +240,29 @@ onUnmounted(() => {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      /* 纯黑剪影滤镜，确保猫是纯黑色的 */
-      filter: brightness(0); 
-    }
-
-    .glasses-overlay {
-      position: absolute;
-      /* 针对全身猫素材的微调：
-         因为是全身照，头通常在上方 10%-40% 的区域
-         根据素材实际情况调整 top/left/width
-      */
-      top: 22%; 
-      left: 45%; /* 假设猫头稍微偏右或居中 */
-      transform: translateX(-50%);
-      width: 45%; /* 眼镜占身体宽度的比例 */
-      height: 20%;
-      z-index: 2001;
-      opacity: 0.9;
-      
-      .glasses-svg {
-        width: 100%;
-        height: 100%;
-        /* 给眼镜加一点投影，使其在黑猫身上更明显 */
-        filter: drop-shadow(0 1px 1px rgba(255,255,255,0.4));
-      }
+      /* 关键：像素艺术渲染模式，防止图片模糊 */
+      image-rendering: pixelated; 
     }
   }
 
   .speech-bubble {
     position: absolute;
+    /* 调整气泡位置，避免遮挡猫耳朵 */
     top: -50px; 
     left: 50%;
     transform: translateX(-50%);
     background: #fff;
     padding: 8px 12px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
-    font-size: 12px; /* 字体改小以匹配宠物尺寸 */
+    font-size: 13px;
     color: #333;
-    font-weight: bold;
+    font-weight: 600;
     pointer-events: none;
-    border: 1px solid #333;
+    border: 1px solid #333; /* 黑框风格匹配黑猫 */
 
+    /* 气泡小三角 */
     &::after {
       content: '';
       position: absolute;
@@ -248,14 +288,8 @@ onUnmounted(() => {
   }
 }
 
-/* 奔跑动画的关键帧：模拟小碎步的颠簸感 */
 @keyframes run-bounce {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  100% {
-    /* 向上跳动 4px，并轻微前倾，模拟奔跑的动势 */
-    transform: translateY(-4px) rotate(3deg); 
-  }
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
 }
 </style>

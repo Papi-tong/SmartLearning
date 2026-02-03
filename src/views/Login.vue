@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <!-- Background Carousel -->
+    <!--背景轮播图 -->
     <div class="background-slider">
       <el-carousel height="100vh" arrow="never" indicator-position="none" :interval="5000" :pause-on-hover="false">
         <el-carousel-item v-for="item in features" :key="item.title">
@@ -11,7 +11,7 @@
       </el-carousel>
     </div>
 
-    <!-- Login Section -->
+    <!-- 登录框样式 -->
     <div class="login-content-wrapper">
       <div class="login-box glass-effect">
         <div class="login-header">
@@ -24,7 +24,7 @@
           <p class="subtitle" v-else-if="currentView === 'forgot'">重置密码，找回您的账号</p>
         </div>
 
-        <!-- Login Form -->
+        <!-- 登录表单 -->
         <el-form v-if="currentView === 'login'" :model="loginForm" class="login-form" @submit.prevent="handleLogin">
           <el-form-item>
             <el-input 
@@ -51,7 +51,7 @@
           </el-form-item>
         </el-form>
 
-        <!-- Register Form -->
+        <!-- 注册表格 -->
         <el-form v-if="currentView === 'register'" :model="registerForm" class="login-form" @submit.prevent="handleRegister">
           <el-form-item>
             <el-input 
@@ -86,7 +86,7 @@
           </el-form-item>
         </el-form>
 
-        <!-- Forgot Password Form -->
+        <!-- 忘记密码表格 -->
         <el-form v-if="currentView === 'forgot'" :model="forgotForm" class="login-form" @submit.prevent="handleForgot">
           <el-form-item>
             <el-input 
@@ -286,18 +286,9 @@ const handleForgot = () => {
     height: 100%;
     z-index: 0;
 
-    /* 注意：这里不需要修改 el-carousel 的样式，
-       因为 el-carousel-item 默认会继承高度 
-    */
-
     .bg-slide {
       width: 100%;
       height: 100%;
-      /* 核心修改 2: 
-         cover: 保持图片比例，裁剪边缘以填满容器（推荐，好看）。
-         100% 100%: 强制拉伸图片适应屏幕（如果图片比例不同会变形）。
-         此处建议使用 cover。
-      */
       background-size: cover; 
       background-position: center center; 
       background-repeat: no-repeat;
@@ -310,7 +301,7 @@ const handleForgot = () => {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.3); // 根据图片亮度调整透明度
+      background: rgba(0, 0, 0, 0.3);
     }
   }
 

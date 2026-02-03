@@ -1,5 +1,5 @@
 <template>
-  <div class="user-management-container">
+  <div class="course-management-container">
     <el-card shadow="never" class="filter-card">
       <div class="filter-header">
         <div class="left-panel">
@@ -21,12 +21,10 @@
             <el-option label="2025-2026学期" value="2025-2026" />
             <el-option label="2024-2025学期" value="2024-2025" />
           </el-select>
-          
           <el-select v-model="major" placeholder="专业筛选" class="filter-select">
             <el-option label="全部专业" value="" />
             <el-option label="软件工程" value="SE" />
             <el-option label="计算机科学与技术" value="CS" />
-            <el-option label="人工智能" value="AI" />
           </el-select>
         </div>
       </div>
@@ -46,75 +44,31 @@
 import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 
-// 搜索与筛选状态
 const searchKeyword = ref('')
-const semester = ref('2025-2026') // 默认显示 2025-2026 学期
-const major = ref('') // 专业默认空（显示 placeholder 或全部）
+const semester = ref('2025-2026')
+const major = ref('')
 
-// 搜索处理逻辑
 const handleSearch = () => {
-  console.log('正在搜索:', searchKeyword.value)
-  console.log('当前条件:', { semester: semester.value, major: major.value })
-  // 在实际项目中，这里可以使用 Provide/Inject 或 Pinia 将筛选条件传递给子组件
+  console.log('Searching:', searchKeyword.value)
 }
 </script>
 
 <style scoped lang="scss">
-.user-management-container {
-  /* 需求2：样式修改 - filter-card 宽度视觉上缩小，更紧凑 */
+/* 直接复用 UserManagement 的 CSS */
+.course-management-container {
   .filter-card {
     margin-bottom: 20px;
-    border-radius: 8px; // 圆角微调
-    
-    :deep(.el-card__body) {
-      padding: 12px 20px; // 减小内边距，让高度变窄
-    }
+    border-radius: 8px;
+    :deep(.el-card__body) { padding: 12px 20px; }
   }
-
   .filter-header {
-    display: flex;
-    justify-content: space-between; // 左右两端对齐
-    align-items: center;
-    
-    .left-panel {
-      flex: 1;
-      display: flex;
-      justify-content: flex-start; // 确保搜索框靠左
-      
-      .search-input {
-        width: 320px; // 限制搜索框宽度
-        
-        /* 让搜索框看起来更圆润现代 */
-        :deep(.el-input__wrapper) {
-          border-radius: 20px;
-          padding-left: 15px;
-        }
-        
-        .search-icon {
-          cursor: pointer;
-          font-size: 16px;
-          color: #909399;
-          
-          &:hover {
-            color: #409EFF;
-          }
-        }
-      }
+    display: flex; justify-content: space-between; align-items: center;
+    .left-panel { flex: 1; display: flex; justify-content: flex-start; 
+      .search-input { width: 320px; :deep(.el-input__wrapper) { border-radius: 20px; padding-left: 15px; } 
+      .search-icon { cursor: pointer; &:hover { color: #409EFF; } } }
     }
-
-    .right-panel {
-      display: flex;
-      gap: 15px; // 两个筛选框之间的间距
-      
-      .filter-select {
-        width: 160px;
-      }
-    }
+    .right-panel { display: flex; gap: 15px; .filter-select { width: 160px; } }
   }
-  
-  /* 子页面容器 */
-  .content-area {
-    min-height: 500px;
-  }
+  .content-area { min-height: 500px; }
 }
 </style>

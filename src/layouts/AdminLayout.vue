@@ -49,15 +49,27 @@
             </el-sub-menu>
           </el-sub-menu>
 
-          <el-menu-item index="/admin/tasks-exams">
-            <el-icon><List /></el-icon>
-            <span>任务与考试管理</span>
-          </el-menu-item>
+          <el-sub-menu index="/admin/tasks-exams">
+            <template #title>
+              <el-icon><List /></el-icon>
+              <span>任务与考试管理</span>
+            </template>
+            <el-menu-item index="/admin/tasks-exams/manage" class="sub-menu-item">管理学习任务与考试</el-menu-item>
+            <el-menu-item index="/admin/tasks-exams/audit" class="sub-menu-item">审核学习任务与考试</el-menu-item>  
+          </el-sub-menu>
 
-          <el-menu-item index="/admin/question-bank">
+          <el-sub-menu index="/admin/question-bank">
+            <template #title>
             <el-icon><Collection /></el-icon>
             <span>题库与试卷管理</span>
-          </el-menu-item>
+            </template>
+            <el-menu-item index="/admin/question-bank/manage" class="sub-menu-item">
+              管理题库与试卷
+            </el-menu-item>
+            <el-menu-item index="/admin/question-bank/audit" class="sub-menu-item">
+              审核题库与试卷
+            </el-menu-item>
+          </el-sub-menu>
 
           <el-menu-item index="/admin/practice-data">
             <el-icon><TrendCharts /></el-icon>

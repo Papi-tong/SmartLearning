@@ -43,13 +43,13 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import('../layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, role: 'admin' },
-    redirect: '/admin/dashboard', // 访问 /admin 时自动跳到概览
+    redirect: '/admin/dashboard', 
     children: [
       {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: () => import('../views/admin/Dashboard.vue'),
-        meta: { title: '系统概览' } // 添加 title 供面包屑使用
+        meta: { title: '系统概览' } 
       },
       {
         path: 'users',
@@ -89,7 +89,7 @@ const routes: RouteRecordRaw[] = [
         name: 'CourseManagement',
         component: () => import('../views/admin/CourseManagement.vue'),
         redirect: '/admin/courses/audit',
-        meta: { title: '课程管理' }, // <--- 这里已修正为英文逗号
+        meta: { title: '课程管理' }, // 
         children: [
           {
             path: 'audit',
@@ -130,13 +130,43 @@ const routes: RouteRecordRaw[] = [
         path: 'tasks-exams',
         name: 'TaskExamManagement',
         component: () => import('../views/admin/TaskExamManagement.vue'),
-        meta: { title: '任务与考试管理' }
+        meta: { title: '任务与考试管理' },
+        redirect: '/admin/tasks-exams/manage', 
+        children: [
+          {
+            path: 'manage',
+            name: 'TaskManageList',
+            component: () => import('../views/admin/tasks-exams/TaskManageList.vue'),
+            meta: { title: '管理学习任务与考试' }
+          },
+          {
+            path: 'audit',
+            name: 'TaskAuditList',
+            component: () => import('../views/admin/tasks-exams/TaskAuditList.vue'),
+            meta: { title: '审核学习任务与考试' }
+          }
+        ]
       },
       {
         path: 'question-bank',
         name: 'QuestionBank',
         component: () => import('../views/admin/QuestionBank.vue'),
-        meta: { title: '题库与试卷管理' }
+        redirect: '/admin/question-bank/manage',
+        meta: { title: '题库与试卷管理' },
+        children: [
+          {
+            path: 'manage',
+            name: 'QuestionBankManageList',
+            component: () => import('../views/admin/question-bank/QuestionBankManageList.vue'),
+            meta: { title: '管理题库与试卷' }
+          },
+          {
+            path: 'audit',
+            name: 'QuestionBankAuditList',
+            component: () => import('../views/admin/question-bank/QuestionBankAuditList.vue'),
+            meta: { title: '审核题库与试卷' }
+          }
+        ]
       },
       {
         path: 'practice-data',

@@ -1,5 +1,70 @@
 <template>
   <div class="home-container">
+    <header class="nav-header">
+      <div class="nav-left">
+        <div class="logo">
+          <img src="https://element-plus.org/images/element-plus-logo.svg" alt="Logo" class="logo-img" />
+          <span class="logo-text">智学课堂</span>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <el-menu
+          mode="horizontal"
+          :ellipsis="false"
+          class="transparent-menu"
+          text-color="#fff"
+          active-text-color="#ffd04b"
+        >
+          <el-menu-item index="1">首页</el-menu-item>
+          
+          <el-sub-menu index="2" popper-class="custom-submenu-popper">
+            <template #title>课程</template>
+            <el-menu-item index="2-1">推荐课程</el-menu-item>
+            <el-menu-item index="2-2">专业课</el-menu-item>
+            <el-menu-item index="2-3">公开课</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="3" popper-class="custom-submenu-popper">
+            <template #title>电子教材</template>
+            <el-menu-item index="3-1">计算机科学</el-menu-item>
+            <el-menu-item index="3-2">数学基础</el-menu-item>
+            <el-menu-item index="3-3">外语教材</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="4" popper-class="custom-submenu-popper">
+            <template #title>学校</template>
+            <el-menu-item index="4-1">清华大学</el-menu-item>
+            <el-menu-item index="4-2">北京大学</el-menu-item>
+            <el-menu-item index="4-3">浙江大学</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="5" popper-class="custom-submenu-popper">
+            <template #title>题库</template>
+            <el-menu-item index="5-1">历年真题</el-menu-item>
+            <el-menu-item index="5-2">模拟试卷</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="6" popper-class="custom-submenu-popper">
+            <template #title>刷题</template>
+            <el-menu-item index="6-1">每日一练</el-menu-item>
+            <el-menu-item index="6-2">错题本</el-menu-item>
+          </el-sub-menu>
+        </el-menu>
+      </div>
+
+      <div class="nav-right">
+        <div class="search-box">
+           <el-input 
+             placeholder="搜索课程..." 
+             :prefix-icon="Search"
+             class="nav-search"
+           />
+        </div>
+        <el-button type="primary" round class="login-btn">登录 / 注册</el-button>
+      </div>
+    </header>
+
     <el-carousel trigger="click" height="100vh" class="banner-carousel" :interval="5000" :pause-on-hover="false">
       <el-carousel-item v-for="item in banners" :key="item.id">
         <div class="banner-content">
@@ -10,7 +75,7 @@
           <div class="banner-text">
             <h1 class="animate__animated animate__fadeInDown">{{ item.title }}</h1>
             <p class="animate__animated animate__fadeInUp">{{ item.description }}</p>
-            <el-button type="primary" size="large" class="animate__animated animate__fadeInUp" @click="handleBannerClick(item)">
+            <el-button type="primary" size="large" class="animate__animated animate__fadeInUp hero-btn" @click="handleBannerClick(item)">
               立即探索
             </el-button>
           </div>
@@ -53,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { User, StarFilled } from '@element-plus/icons-vue'
+import { User, StarFilled, Search } from '@element-plus/icons-vue'
 
 const banners = ref([
   {
@@ -112,42 +177,6 @@ const recommendedCourses = ref([
     studentCount: 1200,
     rating: 4.7,
     cover: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&auto=format&fit=crop&w=1474&q=80'
-  },
-    {
-    id: 5,
-    title: 'React Native 移动端开发',
-    instructor: '周老师',
-    instructorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoey',
-    studentCount: 800,
-    rating: 4.6,
-    cover: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80'
-  },
-  {
-    id: 6,
-    title: 'UI/UX 设计思维与实践',
-    instructor: '陈老师',
-    instructorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ginger',
-    studentCount: 1500,
-    rating: 4.9,
-    cover: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80'
-  },
-    {
-    id: 7,
-    title: 'Java 并发编程核心技术',
-    instructor: '刘老师',
-    instructorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
-    studentCount: 2100,
-    rating: 4.8,
-    cover: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80'
-  },
-  {
-    id: 8,
-    title: 'Go 语言微服务架构',
-    instructor: '孙老师',
-    instructorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Abby',
-    studentCount: 950,
-    rating: 4.9,
-    cover: 'https://images.unsplash.com/photo-1614624532983-4ce03382d63d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1631&q=80'
   }
 ])
 
@@ -160,10 +189,119 @@ const handleBannerClick = (item: any) => {
 .home-container {
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden; /* 防止横向滚动 */
+  position: relative; /* 为绝对定位的 header 提供基准 */
+  overflow-x: hidden;
 
+  /* --- 1. 顶部导航栏样式 --- */
+  .nav-header {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px; /* 导航栏高度 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    z-index: 1000; /* 确保层级高于轮播图 */
+    box-sizing: border-box;
+    /* 渐变背景，保证在亮色图片上文字也能看清 */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    
+    .nav-left {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        
+        .logo-img {
+          height: 32px;
+          flex-shrink: 0;
+        }
+        .logo-text {
+          font-size: 22px;
+          font-weight: bold;
+          color: #fff;
+          letter-spacing: 1px;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .nav-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+
+      /* 魔改 el-menu 样式，使其透明 */
+      .transparent-menu {
+        background-color: transparent !important;
+        border-bottom: none !important;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+
+        :deep(.el-sub-menu__title), :deep(.el-menu-item) {
+          background-color: transparent !important;
+          font-size: 16px;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.9) !important;
+          
+          &:hover {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+          }
+        }
+        
+        /* 去除 submenu 箭头，仿影石风格 */
+        :deep(.el-sub-menu__icon-arrow) {
+          display: none; 
+        }
+      }
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+      .search-box {
+        .nav-search {
+          width: 200px;
+          :deep(.el-input__wrapper) {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: none;
+            box-shadow: none;
+            border-radius: 20px;
+            
+            .el-input__inner {
+              color: #fff;
+              &::placeholder {
+                color: rgba(255, 255, 255, 0.7);
+              }
+            }
+          }
+        }
+      }
+
+      .login-btn {
+        background-color: #fff;
+        color: #000;
+        border: none;
+        font-weight: 600;
+        &:hover {
+          background-color: #f2f2f2;
+        }
+      }
+    }
+  }
+
+  /* --- 2. 轮播图样式 (保持原逻辑，微调) --- */
   .banner-carousel {
-    // 确保轮播内容占满整个容器
     :deep(.el-carousel__container) {
       height: 100vh !important;
     }
@@ -172,14 +310,13 @@ const handleBannerClick = (item: any) => {
       position: relative;
       width: 100%;
       height: 100%;
-      overflow: hidden; // 关键：隐藏图片放大后溢出的部分
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
 
-      // 新增：动态背景图层
       .banner-bg {
         position: absolute;
         top: 0;
@@ -189,7 +326,6 @@ const handleBannerClick = (item: any) => {
         background-size: cover;
         background-position: center;
         z-index: 0;
-        // 关键动画：5s 对应轮播间隔，linear 或 ease-out 都可以
         animation: zoomEffect 5s linear infinite; 
       }
 
@@ -199,7 +335,7 @@ const handleBannerClick = (item: any) => {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.3); /* 降低遮罩透明度，因为有顶部渐变了 */
         z-index: 1;
       }
       
@@ -208,68 +344,62 @@ const handleBannerClick = (item: any) => {
         z-index: 2;
         padding: 0 20px;
         max-width: 800px;
+        margin-top: 60px; /* 稍微下移，避开视觉中心被 Header 干扰 */
         
         h1 {
-          font-size: 48px;
+          font-size: 56px; /* 字体加大 */
+          font-weight: 800;
           color: #fff;
-          margin-bottom: 20px;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          margin-bottom: 24px;
+          text-shadow: 0 4px 10px rgba(0,0,0,0.3);
           animation: fadeInUp 1s ease-out;
         }
         
         p {
-          font-size: 20px;
-          color: rgba(255,255,255,0.9);
-          margin-bottom: 40px;
+          font-size: 22px;
+          color: rgba(255,255,255,0.95);
+          margin-bottom: 48px;
           animation: fadeInUp 1s ease-out 0.3s backwards;
         }
 
-        .el-button {
+        .hero-btn {
+          padding: 25px 50px;
+          font-size: 18px;
+          border-radius: 50px;
           animation: fadeInUp 1s ease-out 0.6s backwards;
         }
       }
     }
   }
   
-  // 背景放大动画的关键帧
+  // 动画部分
   @keyframes zoomEffect {
-    0% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(1.15); // 放大到 1.15 倍，实现推进效果
-    }
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
   }
 
   @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
+  /* --- 3. 热门课程推荐样式 (保持不变) --- */
   .content-section {
-    width: 100%;       // 修改点：占据全宽
-    margin: 40px 0;    // 修改点：移除左右 margin
-    padding: 0 20px;   // 修改点：极小的内边距防止卡片紧贴浏览器边缘，若需完全贴合可设为 0
+    width: 100%; 
+    margin: 60px 0; 
+    padding: 0 40px; 
     box-sizing: border-box;
     
     .section-header {
       display: flex;
       align-items: center;
       margin-bottom: 40px;
-      padding: 0 10px; // 标题稍微缩进一点
       
       .section-title {
         font-size: 32px;
         color: #303133;
         font-weight: 700;
-        margin: 0;
-        margin-right: 20px;
+        margin: 0 20px 0 0;
         white-space: nowrap;
       }
       
@@ -281,7 +411,7 @@ const handleBannerClick = (item: any) => {
     }
     
     .course-list {
-      margin: 0 !important; // 强制去除 row 的默认负 margin，防止撑开页面
+      margin: 0 !important;
       width: 100%;
       
       .course-card {
@@ -294,19 +424,13 @@ const handleBannerClick = (item: any) => {
         &:hover {
           transform: translateY(-10px);
           box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-          
-          .course-image {
-            transform: scale(1.1);
-          }
-          
-          .course-overlay {
-            opacity: 1;
-          }
+          .course-image { transform: scale(1.1); }
+          .course-overlay { opacity: 1; }
         }
         
         .course-image-wrapper {
           position: relative;
-          height: 200px; // 稍微增加高度以适应大屏
+          height: 200px;
           overflow: hidden;
           
           .course-image {
@@ -319,10 +443,7 @@ const handleBannerClick = (item: any) => {
           
           .course-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
@@ -334,7 +455,6 @@ const handleBannerClick = (item: any) => {
         
         .course-info {
           padding: 20px;
-          
           .course-title {
             font-size: 16px;
             font-weight: 600;
@@ -347,7 +467,6 @@ const handleBannerClick = (item: any) => {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
           }
-          
           .course-instructor {
             display: flex;
             align-items: center;
@@ -356,27 +475,18 @@ const handleBannerClick = (item: any) => {
             font-size: 14px;
             color: #606266;
           }
-          
           .course-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 13px;
             color: #909399;
-            
-            .students {
+            .students, .rating {
               display: flex;
               align-items: center;
               gap: 4px;
             }
-            
-            .rating {
-              display: flex;
-              align-items: center;
-              gap: 4px;
-              color: #ff9900;
-              font-weight: bold;
-            }
+            .rating { color: #ff9900; font-weight: bold; }
           }
         }
       }
@@ -384,10 +494,46 @@ const handleBannerClick = (item: any) => {
   }
 }
 
-// Media Queries 
+// 响应式调整
 @media (max-width: 992px) {
-  .home-container .banner-carousel .banner-content .banner-text h1 {
-    font-size: 36px;
+  .home-container {
+    .nav-header {
+      padding: 0 20px;
+      .nav-center, .nav-right .search-box { display: none; } /* 小屏幕隐藏中间导航 */
+    }
+    .banner-carousel .banner-content .banner-text h1 {
+      font-size: 36px;
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+.custom-submenu-popper {
+  /* 下拉菜单背景改为深色半透明，仿影石效果 */
+  &.el-popper {
+    background: rgba(0, 0, 0, 0.85) !important;
+    border: none !important;
+    backdrop-filter: blur(10px);
+    
+    .el-menu--popup {
+      background: transparent !important;
+      padding: 10px 0;
+    }
+
+    .el-menu-item {
+      color: #ccc !important;
+      background: transparent !important;
+      &:hover {
+        color: #fff !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+    
+    /* 隐藏顶部小箭头 */
+    .el-popper__arrow {
+      display: none;
+    }
   }
 }
 </style>

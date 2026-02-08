@@ -1,71 +1,72 @@
 <template>
   <div class="basic-layout">
-    <el-header class="header">
-      <div class="logo">
-        <el-icon :size="30" color="#409EFF"><School /></el-icon>
-        <span class="title">智学课堂</span>
-      </div>
-      <el-menu mode="horizontal" :router="true" class="nav-menu">
-        <el-menu-item index="/">首页</el-menu-item>
-        <el-menu-item index="/textbook">电子教材</el-menu-item>
-        <el-menu-item index="/question-bank">题库</el-menu-item>
-        <el-menu-item index="/practice">刷题</el-menu-item>
-      </el-menu>
-      <div class="actions">
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索课程/教材..."
-          prefix-icon="Search"
-          class="search-input"
-        />
-        <el-button type="primary" @click="$router.push('/login')" v-if="!userStore.isLoggedIn">登录</el-button>
-        <el-dropdown v-else @command="handleCommand">
-          <span class="el-dropdown-link">
-            {{ userStore.userInfo?.name }}
-            <el-icon class="el-icon--right"><arrow-down /></el-icon>
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="dashboard">进入后台</el-dropdown-item>
-              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </el-header>
-    
-    <el-main class="main-content">
-      <router-view />
-    </el-main>
-    
-    <AIAgent />
+    <el-container>
+      <el-header v-if="!isHomePage" class="header" height="60px">
+        <div class="logo">
+          <el-icon :size="24" color="#409EFF"><School /></el-icon>
+          <span class="title">智学课堂</span>
+        </div>
+        
+        <div class="nav-menu"></div>
+
+        <div class="actions">
+          <el-input 
+            v-model="searchQuery" 
+            placeholder="搜索..." 
+            class="search-input"
+            :prefix-icon="Search"
+          />
+          <el-dropdown>
+            <span class="el-dropdown-link">
+              <el-avatar :size="32" :src="userStore.userInfo?.avatar" class="user-avatar" />
+              <span class="username">{{ userStore.userInfo?.name || '用户' }}</span>
+              <el-icon class="el-icon--right"><arrow-down /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </el-header>
+      
+      <el-main 
+        :style="{ 
+          padding: isHomePage ? '0' : '20px', 
+          height: '100vh',   /* 容器高度占满屏幕 */
+          overflowY: 'auto', /* 关键：允许垂直方向滚动 */
+          overflowX: 'hidden' 
+        }"
+      >
+        <router-view />
+      </el-main>
+      
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useUserStore } from '../stores/user'
-import { useRouter } from 'vue-router'
-import AIAgent from '../components/AIAgent.vue'
+import { useRouter, useRoute } from 'vue-router'
 import { Search, School, ArrowDown } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute() 
 const searchQuery = ref('')
 
-const handleCommand = (command: string) => {
-  if (command === 'logout') {
-    userStore.logout()
-    router.push('/')
-  } else if (command === 'dashboard') {
-    if (userStore.role === 'student') router.push('/student/dashboard')
-    if (userStore.role === 'teacher') router.push('/teacher/dashboard')
-    if (userStore.role === 'admin') router.push('/admin/dashboard')
-  }
-}
+const isHomePage = computed(() => route.name === 'Home')
 </script>
 
 <style scoped lang="scss">
+.basic-layout {
+  height: 100%;
+  width: 100%;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -89,9 +90,7 @@ const handleCommand = (command: string) => {
   }
   
   .nav-menu {
-    border-bottom: none;
     flex: 1;
-    margin-left: 40px;
   }
   
   .actions {
@@ -109,21 +108,14 @@ const handleCommand = (command: string) => {
       cursor: pointer;
       color: var(--el-color-primary);
       
-      .user-avatar {
-        margin-right: 8px;
-      }
-      
-      .username {
-        font-weight: 500;
-      }
+      .user-avatar { margin-right: 8px; }
+      .username { font-weight: 500; }
     }
   }
 }
 
-.main-content {
-  padding: 0;
-  margin-top: 60px;
-  min-height: calc(100vh - 60px);
-  background-color: #f5f7fa;
+.el-main {
+  scroll-behavior: smooth;
+  background-color: #f5f7fa; 
 }
 </style>
